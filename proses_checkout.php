@@ -25,9 +25,18 @@ if (!$data) {
     exit;
 }
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 // ── Validasi field wajib ──────────────────────────────────
 $namaPemesan = trim($data['nama_pemesan'] ?? '');
 $nomorMeja   = trim($data['nomor_meja']   ?? '');
+
+// Jika scan QR valid, paksa nomor_meja dari session (anti-tamper)
+if (!empty($_SESSION['qr_valid']) && !empty($_SESSION['qr_meja'])) {
+    $nomorMeja = $_SESSION['qr_meja'];
+}
 $items       = $data['items']             ?? [];
 
 if ($namaPemesan === '') {
@@ -121,6 +130,8 @@ try {
     $pdo->commit();
 
     // ── Response sukses ───────────────────────────────────
+    $_SESSION['last_kode_pesanan'] = $kodePesanan;
+    
     echo json_encode([
         'success'      => true,
         'message'      => 'Pesanan berhasil disimpan.',

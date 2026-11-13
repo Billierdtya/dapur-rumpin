@@ -3,7 +3,7 @@
 //  admin/index.php — Dashboard Admin
 // ============================================================
 require_once '../includes/auth_check.php';
-authCheck('admin');
+authCheck('owner');
 require_once '../config/db.php';
 
 $user = currentUser();
@@ -12,7 +12,7 @@ $user = currentUser();
 $totalMenu     = $pdo->query("SELECT COUNT(*) FROM menu WHERE is_active = 1")->fetchColumn();
 $totalPesanan  = $pdo->query("SELECT COUNT(*) FROM pesanan")->fetchColumn();
 $pesananPending= $pdo->query("SELECT COUNT(*) FROM pesanan WHERE status = 'pending'")->fetchColumn();
-$totalStaff    = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'staff'")->fetchColumn();
+$totalStaff    = $pdo->query("SELECT COUNT(*) FROM users WHERE role != 'owner'")->fetchColumn();
 $pendapatanHari= $pdo->query(
     "SELECT COALESCE(SUM(total_harga),0) FROM pesanan
      WHERE DATE(created_at) = CURDATE() AND status != 'dibatalkan'"

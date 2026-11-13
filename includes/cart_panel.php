@@ -2,6 +2,13 @@
      includes/cart_panel.php — Cart panel + Checkout modal
      Di-include oleh index.php dan menu.php
      ============================================================ -->
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$qrMejaValue = $_SESSION['qr_meja'] ?? '';
+$isQrValid   = !empty($_SESSION['qr_valid']) && !empty($qrMejaValue);
+?>
 
 <!-- Floating Cart Button -->
 <button class="cart-float" onclick="bukaKeranjang()" title="Lihat Keranjang">
@@ -57,39 +64,17 @@
         </div>
         <div class="checkout-form-group">
           <label for="inputNomorMeja">Nomor Meja *</label>
-          <input type="text" id="inputNomorMeja" placeholder="Contoh: 5" />
+          <?php if ($isQrValid): ?>
+            <input type="text" id="inputNomorMeja" value="<?= htmlspecialchars($qrMejaValue) ?>" readonly style="background-color: #f1f5f9; cursor: not-allowed; color: #64748b; border-color: #cbd5e1;" />
+            <small style="color: #059669; font-size: 0.75rem; display: block; margin-top: 4px;">✅ Otomatis terisi (terhubung via QR Code)</small>
+          <?php else: ?>
+            <input type="text" id="inputNomorMeja" placeholder="Contoh: 5" />
+          <?php endif; ?>
         </div>
         <button class="btn-bayar" onclick="prosesBayar()">💳 Lanjut ke Pembayaran QRIS</button>
       </div>
 
-      <!-- STEP 2: QRIS -->
-      <div id="checkoutStep2" style="display:none;">
-        <div class="qris-wrap">
-          <div class="qris-info-box">
-            <strong id="qrisNamaPemesan">-</strong> &nbsp;|&nbsp;
-            <strong id="qrisNomorMeja">-</strong>
-          </div>
-          <p class="qris-amount" id="qrisTotal">Rp 0</p>
-          <div class="qris-img-frame">
-            <img src="img/qris.jpeg" alt="QRIS Dapur Rumpin"
-                 onerror="this.parentElement.innerHTML='<span>📱 QRIS Dapur Rumpin<br><small>Letakkan file QRIS di img/qris.jpeg</small></span>'" />
-          </div>
-          <div class="qris-instructions">
-            <strong>Cara Bayar via QRIS:</strong>
-            <ol>
-              <li>Buka aplikasi dompet digital (GoPay, OVO, Dana, dll)</li>
-              <li>Pilih menu <strong>Scan QR / Bayar</strong></li>
-              <li>Arahkan kamera ke QR Code di atas</li>
-              <li>Masukkan nominal sesuai total tagihan</li>
-              <li>Konfirmasi pembayaran</li>
-              <li>Klik tombol WhatsApp di bawah untuk konfirmasi ke admin</li>
-            </ol>
-          </div>
-          <button class="btn-wa-konfirmasi" onclick="konfirmasiWA()">
-            💬 Konfirmasi Pembayaran via WhatsApp
-          </button>
-        </div>
-      </div>
+
 
     </div>
   </div>

@@ -1,16 +1,21 @@
 <?php
 // ============================================================
-//  login.php  (taruh di root project)
+//  login.php — Halaman Login DapurRumpin v2
+//  Mendukung 3 role: owner, kasir, dapur
 // ============================================================
 
 session_start();
 
 // Kalau sudah login, langsung redirect sesuai role
+require_once 'includes/auth_check.php';
+
 if (!empty($_SESSION['user_id'])) {
-    if ($_SESSION['user_role'] === 'admin') {
-        header('Location: admin/index.php');
+    $role = $_SESSION['user_role'] ?? '';
+    $dashboard = getDashboardUrl($role);
+    if ($dashboard === 'login.php') {
+        header('Location: logout.php');
     } else {
-        header('Location: staff/pesanan.php');
+        header('Location: ' . $dashboard);
     }
     exit;
 }
@@ -53,12 +58,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_username'] = $user['username'];
                 $_SESSION['user_role']     = $user['role'];
 
-                // Redirect sesuai role
-                if ($user['role'] === 'admin') {
-                    header('Location: admin/index.php');
-                } else {
-                    header('Location: staff/pesanan.php');
-                }
+                // Redirect sesuai role baru
+                $dashboard = getDashboardUrl($user['role']);
+                header('Location: ' . $dashboard);
                 exit;
             } else {
                 // Pesan error yang sama untuk username/password salah
@@ -285,10 +287,10 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 
     .login-footer a:hover { text-decoration: underline; }
 
-    /* ── Role Badges (info visual) ── */
+    /* ── Role Badges (info visual — 3 role baru) ── */
     .role-info {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       margin-top: 20px;
       padding-top: 20px;
       border-top: 1px solid #f1f5f9;
@@ -297,19 +299,28 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     .role-badge {
       flex: 1;
       text-align: center;
-      padding: 10px 8px;
+      padding: 10px 6px;
       border-radius: var(--radius-md);
-      font-size: 0.78rem;
+      font-size: 0.72rem;
+      transition: var(--transition);
     }
 
-    .role-badge.admin  { background: #fff7ed; border: 1px solid #fed7aa; color: #c2410c; }
-    .role-badge.staff  { background: var(--hijau-pastel); border: 1px solid var(--hijau-pucat); color: var(--hijau-utama); }
+    .role-badge:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    /* Warna per role */
+    .role-badge.owner  { background: #fff7ed; border: 1px solid #fed7aa; color: #c2410c; }
+    .role-badge.kasir  { background: var(--hijau-pastel); border: 1px solid var(--hijau-pucat); color: var(--hijau-utama); }
+    .role-badge.dapur  { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; }
 
     .role-badge .role-icon { font-size: 1.2rem; display: block; margin-bottom: 4px; }
     .role-badge .role-name { font-weight: 700; display: block; margin-bottom: 2px; }
 
     @media (max-width: 480px) {
       .login-card { padding: 32px 24px; }
+      .role-badge { padding: 8px 4px; font-size: 0.68rem; }
     }
   </style>
 </head>
@@ -321,7 +332,7 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
       <img src="img/logo.jpg" alt="Logo DapurRumpin" class="login-logo"
            onerror="this.style.display='none'">
       <h1>Dapur<span>Rumpin</span></h1>
-      <p>Dashboard Admin &amp; Staff</p>
+      <p>Dashboard Staff</p>
     </div>
 
     <!-- Alert error / success -->
@@ -375,15 +386,22 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     <div class="login-footer">
       <a href="index.php">← Kembali ke Website</a>
 
-      <!-- Info role (hanya visual, bukan fitur register) -->
+      <!-- Info role (hanya visual, bukan fitur register) — 3 role baru -->
       <div class="role-info">
-        <div class="role-badge admin">
-          <span class="role-name">Admin</span>
-          <span>Kelola Menu &amp; Staff</span>
+        <div class="role-badge owner">
+          <span class="role-icon">👑</span>
+          <span class="role-name">Owner</span>
+          <span>Kelola Semua</span>
         </div>
-        <div class="role-badge staff">
-          <span class="role-name">Staff</span>
+        <div class="role-badge kasir">
+          <span class="role-icon">💳</span>
+          <span class="role-name">Kasir</span>
           <span>Kelola Pesanan</span>
+        </div>
+        <div class="role-badge dapur">
+          <span class="role-icon">👨‍🍳</span>
+          <span class="role-name">Staff Dapur</span>
+          <span>Antrian Dapur</span>
         </div>
       </div>
     </div>

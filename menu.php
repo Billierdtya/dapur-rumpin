@@ -2,7 +2,42 @@
 // ============================================================
 //  menu.php — Halaman Menu Dinamis
 // ============================================================
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once 'config/db.php';
+
+// ── QR Code Scan Logic ────────────────────────────────────
+$qrMessage = null;
+$qrType    = 'success';
+
+if (isset($_GET['meja'], $_GET['token'])) {
+    $mejaNum = trim($_GET['meja']);
+    $token   = trim($_GET['token']);
+    
+    $stmt = $pdo->prepare("SELECT id, is_active FROM meja WHERE nomor_meja = ? AND qr_token = ?");
+    $stmt->execute([$mejaNum, $token]);
+    $mejaDb = $stmt->fetch();
+    
+    if ($mejaDb && $mejaDb['is_active']) {
+        $_SESSION['qr_meja']  = $mejaNum;
+        $_SESSION['qr_valid'] = true;
+        $qrMessage = "✅ Berhasil terhubung ke Meja $mejaNum. Silakan pesan menu Anda.";
+        
+        // Log keberhasilan
+        $stmtLog = $pdo->prepare("INSERT INTO qr_logs (nomor_meja, status, ip_address, user_agent) VALUES (?, 'valid', ?, ?)");
+        $stmtLog->execute([$mejaNum, $_SERVER['REMOTE_ADDR'] ?? '', $_SERVER['HTTP_USER_AGENT'] ?? '']);
+    } else {
+        $qrMessage = "❌ QR Code tidak valid atau meja tidak aktif.";
+        $qrType    = 'error';
+        // Hapus session jika scan gagal
+        unset($_SESSION['qr_meja'], $_SESSION['qr_valid']);
+
+        // Log kegagalan
+        $stmtLog = $pdo->prepare("INSERT INTO qr_logs (nomor_meja, status, ip_address, user_agent) VALUES (?, 'invalid', ?, ?)");
+        $stmtLog->execute([$mejaNum, $_SERVER['REMOTE_ADDR'] ?? '', $_SERVER['HTTP_USER_AGENT'] ?? '']);
+    }
+}
 
 // Ambil semua menu aktif, dikelompokkan per kategori
 $stmt  = $pdo->query("SELECT * FROM menu WHERE is_active = 1 ORDER BY kategori, nama ASC");
@@ -73,6 +108,12 @@ foreach ($semua as $m) {
     </p>
   </div>
 
+  <?php if ($qrMessage): ?>
+    <div style="max-width: 800px; margin: 20px auto; padding: 12px 20px; border-radius: 8px; text-align: center; font-weight: 600; <?php echo $qrType === 'success' ? 'background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;' : 'background: #fee2e2; color: #dc2626; border: 1px solid #fecaca;'; ?>">
+      <?= htmlspecialchars($qrMessage) ?>
+    </div>
+  <?php endif; ?>
+
   <!-- MENU SECTION -->
   <section class="menu-page" style="padding-top:50px;">
 
@@ -139,6 +180,6 @@ foreach ($semua as $m) {
   <?php include 'includes/cart_panel.php'; ?>
 
   <button class="scroll-top" id="scrollTop">↑</button>
-  <script src="js/main.js"></script>
+  <script src="js/main.js?v=<?= time() ?>"></script>
 </body>
 </html>

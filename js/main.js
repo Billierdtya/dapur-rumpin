@@ -283,7 +283,9 @@ function bukaCheckout() {
     var fn = document.getElementById('inputNamaPemesan');
     var fm = document.getElementById('inputNomorMeja');
     if (fn) fn.value = '';
-    if (fm) fm.value = '';
+    if (fm && !fm.hasAttribute('readonly')) {
+      fm.value = '';
+    }
   }
 }
 
@@ -302,18 +304,14 @@ function prosesBayar() {
   if (!nama) { alert('Mohon isi nama pemesan terlebih dahulu.'); return; }
   if (!meja) { alert('Mohon isi nomor meja terlebih dahulu.');  return; }
 
-  document.getElementById('checkoutStep1').style.display = 'none';
-  document.getElementById('checkoutStep2').style.display = '';
+  var btnBayar = event.currentTarget || document.querySelector('.btn-bayar');
+  if (btnBayar) {
+    btnBayar.disabled = true;
+    btnBayar.innerHTML = '⏳ Memproses...';
+  }
 
   var cart       = getCart();
   var grandTotal = cart.reduce(function(s, i) { return s + i.harga * i.qty; }, 0);
-
-  var elNama  = document.getElementById('qrisNamaPemesan');
-  var elMeja  = document.getElementById('qrisNomorMeja');
-  var elTotal = document.getElementById('qrisTotal');
-  if (elNama)  elNama.textContent  = nama;
-  if (elMeja)  elMeja.textContent  = 'Meja ' + meja;
-  if (elTotal) elTotal.textContent = formatHarga(grandTotal);
 
   // ── Simpan pesanan ke DB via AJAX ──────────────────────
   var payload = {
@@ -324,10 +322,9 @@ function prosesBayar() {
     })
   };
 
-  // Deteksi apakah kita ada di subfolder atau root
   var base = document.querySelector('meta[name="base-url"]');
-  var url  = base ? base.getAttribute('content') + 'proses_checkout.php'
-                  : 'proses_checkout.php';
+  var baseHref = base ? base.getAttribute('content') : '';
+  var url  = baseHref + 'proses_checkout.php';
 
   fetch(url, {
     method:  'POST',
@@ -337,17 +334,24 @@ function prosesBayar() {
   .then(function(res) { return res.json(); })
   .then(function(data) {
     if (data.success) {
-      // Simpan kode pesanan untuk ditampilkan di WA
       window._kodePesanan = data.kode_pesanan;
-      console.log('Pesanan tersimpan:', data.kode_pesanan);
+
+      // Reset keranjang
+      saveCart([]);
+      updateCartBadge();
+      
+      // Langsung redirect ke cek-pesanan
+      window.location.href = baseHref + 'cek-pesanan.php';
     } else {
-      console.warn('Gagal simpan ke DB:', data.message);
-      // Tetap lanjut ke WA meski DB gagal (degradasi graceful)
+      alert(data.message);
+      if (btnBayar) {
+        btnBayar.disabled = false;
+        btnBayar.innerHTML = '💳 Lanjut ke Pembayaran QRIS';
+      }
     }
   })
   .catch(function(err) {
     console.warn('Network error saat simpan pesanan:', err);
-    // Tetap lanjut — customer tidak perlu tahu error teknis
   });
 }
 
@@ -360,20 +364,20 @@ function konfirmasiWA() {
   var cart  = getCart();
   var grandTotal = cart.reduce(function(s, i) { return s + i.harga * i.qty; }, 0);
 
-  var pesan  = '🍽️ *PESANAN DAPUR RUMPIN*\n\n';
-  pesan += '👤 Nama  : ' + nama + '\n';
-  pesan += '🪑 Meja  : ' + meja + '\n';
+  var pesan  = '*PESANAN DAPUR RUMPIN*\n\n';
+  pesan += 'Nama  : ' + nama + '\n';
+  pesan += 'Meja  : ' + meja + '\n';
   if (window._kodePesanan) {
-    pesan += '🔖 Kode  : ' + window._kodePesanan + '\n';
+    pesan += 'Kode  : ' + window._kodePesanan + '\n';
   }
   pesan += '\n*Detail Pesanan:*\n';
   cart.forEach(function(item) {
     pesan += '• ' + item.nama + ' x' + item.qty + ' = ' + formatHarga(item.harga * item.qty) + '\n';
   });
-  pesan += '\n💰 *Total: ' + formatHarga(grandTotal) + '*\n\n';
-  pesan += '✅ Saya sudah melakukan pembayaran via QRIS. Mohon dikonfirmasi. Terima kasih!';
+  pesan += '\*Total: ' + formatHarga(grandTotal) + '*\n\n';
+  pesan += 'Saya sudah melakukan pembayaran via QRIS. Mohon dikonfirmasi. Terima kasih!';
 
-  var noWA = '6285643117734';
+  var noWA = '627775551647';
   var url  = 'https://wa.me/' + noWA + '?text=' + encodeURIComponent(pesan);
   window.open(url, '_blank');
 

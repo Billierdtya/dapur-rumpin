@@ -3,17 +3,17 @@
 //  admin/staff_form.php — Tambah & Edit Staff
 // ============================================================
 require_once '../includes/auth_check.php';
-authCheck('admin');
+authCheck(['owner', 'admin']);
 require_once '../config/db.php';
 
 $user   = currentUser();
 $id     = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $isEdit = $id > 0;
 $errors = [];
-$staff  = ['nama' => '', 'username' => ''];
+$staff  = ['nama' => '', 'username' => '', 'role' => 'kasir'];
 
 if ($isEdit) {
-    $stmt = $pdo->prepare("SELECT id, nama, username FROM users WHERE id = ? AND role = 'staff'");
+    $stmt = $pdo->prepare("SELECT id, nama, username, role FROM users WHERE id = ?");
     $stmt->execute([$id]);
     $row = $stmt->fetch();
     if (!$row) {
@@ -30,11 +30,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $staff['nama']     = trim($_POST['nama'] ?? '');
         $staff['username'] = trim($_POST['username'] ?? '');
+        $staff['role']     = trim($_POST['role'] ?? 'kasir');
         $password          = $_POST['password'] ?? '';
         $passwordKonfirm   = $_POST['password_konfirm'] ?? '';
 
         if ($staff['nama'] === '')     $errors[] = 'Nama wajib diisi.';
         if ($staff['username'] === '') $errors[] = 'Username wajib diisi.';
+        if (!in_array($staff['role'], ['owner', 'kasir', 'dapur'])) $errors[] = 'Role tidak valid.';
 
         // Cek username duplikat (kecuali milik sendiri saat edit)
         $stmtCek = $pdo->prepare("SELECT id FROM users WHERE username = ? AND id != ?");
@@ -49,17 +51,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($errors)) {
             if ($isEdit) {
                 if ($password !== '') {
-                    $stmt = $pdo->prepare("UPDATE users SET nama=?, username=?, password=? WHERE id=?");
-                    $stmt->execute([$staff['nama'], $staff['username'], password_hash($password, PASSWORD_BCRYPT), $id]);
+                    $stmt = $pdo->prepare("UPDATE users SET nama=?, username=?, password=?, role=? WHERE id=?");
+                    $stmt->execute([$staff['nama'], $staff['username'], password_hash($password, PASSWORD_BCRYPT), $staff['role'], $id]);
                 } else {
-                    $stmt = $pdo->prepare("UPDATE users SET nama=?, username=? WHERE id=?");
-                    $stmt->execute([$staff['nama'], $staff['username'], $id]);
+                    $stmt = $pdo->prepare("UPDATE users SET nama=?, username=?, role=? WHERE id=?");
+                    $stmt->execute([$staff['nama'], $staff['username'], $staff['role'], $id]);
                 }
-                $_SESSION['flash'] = ['type'=>'success','msg'=>'Akun staff berhasil diperbarui.'];
+                $_SESSION['flash'] = ['type'=>'success','msg'=>'Akun berhasil diperbarui.'];
             } else {
-                $stmt = $pdo->prepare("INSERT INTO users (nama, username, password, role) VALUES (?, ?, ?, 'staff')");
-                $stmt->execute([$staff['nama'], $staff['username'], password_hash($password, PASSWORD_BCRYPT)]);
-                $_SESSION['flash'] = ['type'=>'success','msg'=>'Akun staff baru berhasil dibuat.'];
+                $stmt = $pdo->prepare("INSERT INTO users (nama, username, password, role) VALUES (?, ?, ?, ?)");
+                $stmt->execute([$staff['nama'], $staff['username'], password_hash($password, PASSWORD_BCRYPT), $staff['role']]);
+                $_SESSION['flash'] = ['type'=>'success','msg'=>'Akun baru berhasil dibuat.'];
             }
             header('Location: staff_list.php'); exit;
         }
@@ -121,6 +123,21 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
                  value="<?= htmlspecialchars($staff['username']) ?>"
                  placeholder="Contoh: staff01" required>
           <small class="form-hint">Huruf kecil, angka, dan underscore. Tidak boleh ada spasi.</small>
+        </div>
+
+        <div class="form-group-dash">
+          <label class="form-label">Role Akses <span class="req">*</span></label>
+          <select name="role" class="form-input" required>
+            <option value="">-- Pilih Role --</option>
+            <?php if (hasRole('owner')): ?>
+            <option value="owner" <?= $staff['role'] === 'owner' ? 'selected' : '' ?>>Owner (Admin Penuh)</option>
+            <option value="admin" <?= $staff['role'] === 'admin' ? 'selected' : '' ?>>Admin (Kelola Menu/Meja/Staff)</option>
+            <?php else: ?>
+            <option value="admin" <?= $staff['role'] === 'admin' ? 'selected' : '' ?>>Admin (Kelola Menu/Meja/Staff)</option>
+            <?php endif; ?>
+            <option value="kasir" <?= $staff['role'] === 'kasir' ? 'selected' : '' ?>>Kasir (Kelola Pesanan)</option>
+            <option value="dapur" <?= $staff['role'] === 'dapur' ? 'selected' : '' ?>>Staff Dapur (Lihat Antrian)</option>
+          </select>
         </div>
 
         <div class="form-group-dash">

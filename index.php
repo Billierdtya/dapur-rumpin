@@ -244,6 +244,6 @@ $menuUnggulan = $stmt->fetchAll();
   <?php include 'includes/cart_panel.php'; ?>
 
   <button class="scroll-top" id="scrollTop">↑</button>
-  <script src="js/main.js"></script>
+  <script src="js/main.js?v=<?= time() ?>"></script>
 </body>
 </html>

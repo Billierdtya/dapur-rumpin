@@ -1,0 +1,2 @@
+ErrorDocument 403 /dapur-rumpin/403.php
+ErrorDocument 404 /dapur-rumpin/404.php

@@ -3,7 +3,7 @@
 //  admin/staff_list.php
 // ============================================================
 require_once '../includes/auth_check.php';
-authCheck('admin');
+authCheck(['owner', 'admin']);
 require_once '../config/db.php';
 
 $user  = currentUser();
@@ -11,7 +11,7 @@ $flash = $_SESSION['flash'] ?? null;
 unset($_SESSION['flash']);
 
 $staffs = $pdo->query(
-    "SELECT * FROM users WHERE role = 'staff' ORDER BY created_at DESC"
+    "SELECT * FROM users ORDER BY role, created_at DESC"
 )->fetchAll();
 ?>
 <!DOCTYPE html>
@@ -74,7 +74,7 @@ $staffs = $pdo->query(
                   </div>
                 </td>
                 <td><code><?= htmlspecialchars($s['username']) ?></code></td>
-                <td><span class="badge badge-diproses">Staff</span></td>
+                <td><span class="sidebar-role-badge <?= htmlspecialchars($s['role']) ?>"><?= htmlspecialchars(getRoleLabel($s['role'])) ?></span></td>
                 <td><?= date('d M Y', strtotime($s['created_at'])) ?></td>
                 <td>
                   <div class="action-btns">

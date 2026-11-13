@@ -97,6 +97,9 @@ img { max-width: 100%; display: block; }
 
 .sidebar-role-badge.admin { background: rgba(244,162,97,0.2); color: var(--kuning-aksen); }
 .sidebar-role-badge.staff { background: rgba(82,183,136,0.2); color: var(--hijau-cerah); }
+.sidebar-role-badge.owner { background: rgba(244,162,97,0.2); color: var(--kuning-aksen); }
+.sidebar-role-badge.kasir { background: rgba(82,183,136,0.2); color: var(--hijau-cerah); }
+.sidebar-role-badge.dapur { background: rgba(99,102,241,0.2); color: #818cf8; }
 
 .sidebar-nav {
   padding: 16px 10px;

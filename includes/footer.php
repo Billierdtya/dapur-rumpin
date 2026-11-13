@@ -52,6 +52,7 @@ $base = (basename(dirname($_SERVER['SCRIPT_FILENAME'])) !== 'dapur-rumpin')
         <li><a href="#">📍 Jl. Raya Rumpin No. 12, Bogor</a></li>
         <li><a href="tel:02511234567">📞 (0251) 123-4567</a></li>
         <li><a href="mailto:dapurrumpin3@gmail.com">✉️ dapurrumpin3@gmail.com</a></li>
+        <li><a href="<?= $base ?>cek-pesanan.php" style="color:var(--hijau-cerah);font-weight:600;">🔍 Cek Status Pesanan</a></li>
       </ul>
     </div>
   </div>

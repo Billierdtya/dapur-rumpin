@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 11, 2026 at 09:40 AM
+-- Generation Time: Jun 27, 2026 at 04:47 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -43,7 +43,61 @@ CREATE TABLE `detail_pesanan` (
 
 INSERT INTO `detail_pesanan` (`id`, `pesanan_id`, `menu_id`, `nama_menu`, `harga_saat_pesan`, `qty`, `subtotal`) VALUES
 (1, 1, 4, 'Gurame Asam Manis', 98000, 1, 98000),
-(2, 2, 3, 'Nasi Pecel Jowo', 38000, 1, 38000);
+(2, 2, 3, 'Nasi Pecel Jowo', 38000, 1, 38000),
+(3, 3, 22, 'Chicken Blackpapper', 26000, 1, 26000),
+(4, 4, 22, 'Chicken Blackpapper', 26000, 1, 26000),
+(5, 4, 14, 'Ca Kangkung', 10000, 1, 10000),
+(6, 5, 14, 'Ca Kangkung', 10000, 1, 10000),
+(7, 6, 13, 'Ca Tauge', 10000, 1, 10000),
+(8, 7, 14, 'Ca Kangkung', 10000, 1, 10000),
+(9, 8, 13, 'Ca Tauge', 10000, 1, 10000),
+(10, 9, 13, 'Ca Tauge', 10000, 1, 10000),
+(11, 10, 13, 'Ca Tauge', 10000, 1, 10000),
+(12, 11, 13, 'Ca Tauge', 10000, 1, 10000),
+(13, 12, 13, 'Ca Tauge', 10000, 1, 10000),
+(14, 13, 13, 'Ca Tauge', 10000, 1, 10000),
+(15, 14, 22, 'Chicken Blackpapper', 26000, 1, 26000),
+(16, 14, 24, 'Cumi Balado', 26000, 1, 26000),
+(17, 14, 43, 'Ice Cream', 12000, 1, 12000),
+(18, 14, 32, 'Es Kuwut Melon', 15000, 1, 15000),
+(19, 15, 16, 'Gurame Bakar Madu', 98000, 1, 98000),
+(20, 16, 22, 'Chicken Blackpapper', 26000, 1, 26000),
+(21, 16, 21, 'Chicken Teriyaki', 26000, 1, 26000),
+(22, 16, 7, 'Cumi Asam Manis', 26000, 1, 26000),
+(23, 17, 14, 'Ca Kangkung', 10000, 1, 10000),
+(24, 17, 13, 'Ca Tauge', 10000, 1, 10000),
+(25, 18, 35, 'Strawberry Squash', 18000, 1, 18000),
+(26, 19, 35, 'Strawberry Squash', 18000, 1, 18000),
+(27, 20, 22, 'Chicken Blackpapper', 26000, 1, 26000),
+(28, 20, 31, 'Iced Green Tea', 14000, 1, 14000),
+(29, 21, 11, 'Pecel Sayur', 10000, 1, 10000);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `meja`
+--
+
+CREATE TABLE `meja` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `nomor_meja` varchar(10) NOT NULL,
+  `nama_meja` varchar(100) DEFAULT NULL,
+  `qr_token` varchar(64) NOT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `meja`
+--
+
+INSERT INTO `meja` (`id`, `nomor_meja`, `nama_meja`, `qr_token`, `is_active`, `created_at`) VALUES
+(1, '1', 'Meja 1 - Teras Depan', '230b6149713f11f192bc0a0027000006', 1, '2026-06-26 09:12:19'),
+(2, '2', 'Meja 2 - Teras Depan', '230b6e07713f11f192bc0a0027000006', 1, '2026-06-26 09:12:19'),
+(3, '3', 'Meja 3 - Ruang Utama', '230b70e7713f11f192bc0a0027000006', 1, '2026-06-26 09:12:19'),
+(4, '4', 'Meja 4 - Ruang Utama', '230b7221713f11f192bc0a0027000006', 1, '2026-06-26 09:12:19'),
+(5, '5', 'Meja 5 - Ruang VIP', '230b7340713f11f192bc0a0027000006', 1, '2026-06-26 09:12:19'),
+(6, '6', 'Meja 6 - Ruang VIP', '230b745b713f11f192bc0a0027000006', 1, '2026-06-26 09:12:19');
 
 -- --------------------------------------------------------
 
@@ -125,6 +179,8 @@ CREATE TABLE `pesanan` (
   `nama_pemesan` varchar(100) NOT NULL,
   `nomor_meja` varchar(20) NOT NULL,
   `total_harga` int(10) UNSIGNED NOT NULL,
+  `payment_method` enum('qris','tunai') DEFAULT NULL,
+  `paid_at` timestamp NULL DEFAULT NULL,
   `status` enum('pending','diproses','selesai','dibatalkan') NOT NULL DEFAULT 'pending',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -134,9 +190,62 @@ CREATE TABLE `pesanan` (
 -- Dumping data for table `pesanan`
 --
 
-INSERT INTO `pesanan` (`id`, `kode_pesanan`, `nama_pemesan`, `nomor_meja`, `total_harga`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'DR-20260611-0001', 'budi', '6', 98000, 'dibatalkan', '2026-06-11 03:24:18', '2026-06-11 03:36:49'),
-(2, 'DR-20260611-0002', 'santo', '2', 38000, 'selesai', '2026-06-11 03:37:16', '2026-06-11 03:37:53');
+INSERT INTO `pesanan` (`id`, `kode_pesanan`, `nama_pemesan`, `nomor_meja`, `total_harga`, `payment_method`, `paid_at`, `status`, `created_at`, `updated_at`) VALUES
+(1, 'DR-20260611-0001', 'budi', '6', 98000, NULL, NULL, 'dibatalkan', '2026-06-11 03:24:18', '2026-06-11 03:36:49'),
+(2, 'DR-20260611-0002', 'santo', '2', 38000, NULL, NULL, 'selesai', '2026-06-11 03:37:16', '2026-06-11 03:37:53'),
+(3, 'DR-20260611-0003', 'tes', '1', 26000, NULL, NULL, 'selesai', '2026-06-11 08:30:38', '2026-06-11 12:01:28'),
+(4, 'DR-20260611-0004', 'tes', '1', 36000, NULL, NULL, 'selesai', '2026-06-11 08:46:31', '2026-06-11 12:01:35'),
+(5, 'DR-20260611-0005', 'tes', '1', 10000, NULL, NULL, 'selesai', '2026-06-11 08:47:19', '2026-06-11 12:01:31'),
+(6, 'DR-20260611-0006', 'tes1', '1', 10000, NULL, NULL, 'dibatalkan', '2026-06-11 08:49:09', '2026-06-11 12:01:17'),
+(7, 'DR-20260611-0007', 'budi', '1', 10000, NULL, NULL, 'dibatalkan', '2026-06-11 09:53:16', '2026-06-11 12:01:14'),
+(8, 'DR-20260611-0008', 'cek pesanan', '5', 10000, NULL, NULL, 'dibatalkan', '2026-06-11 09:55:58', '2026-06-11 12:01:07'),
+(9, 'DR-20260611-0009', 'cek pesanan', '1', 10000, NULL, NULL, 'dibatalkan', '2026-06-11 10:13:51', '2026-06-11 12:01:05'),
+(10, 'DR-20260611-0010', 'indonesia', '1', 10000, NULL, NULL, 'selesai', '2026-06-11 10:15:20', '2026-06-11 10:18:22'),
+(11, 'DR-20260611-0011', 'contoh', '5', 10000, NULL, NULL, 'selesai', '2026-06-11 10:16:37', '2026-06-11 10:18:29'),
+(12, 'DR-20260611-0012', 'budi', '2', 10000, NULL, NULL, 'pending', '2026-06-11 12:29:17', '2026-06-11 12:29:17'),
+(13, 'DR-20260611-0013', 'budi', '2', 10000, NULL, NULL, 'pending', '2026-06-11 12:30:37', '2026-06-11 12:30:37'),
+(14, 'DR-20260614-0001', 'Akbar', '4', 79000, NULL, NULL, 'pending', '2026-06-14 06:09:02', '2026-06-14 06:09:02'),
+(15, 'DR-20260626-0001', 'busi', '5', 98000, NULL, NULL, 'diproses', '2026-06-26 08:31:56', '2026-06-26 08:33:55'),
+(16, 'DR-20260626-0002', 'tes', '1', 78000, NULL, NULL, 'pending', '2026-06-26 09:18:56', '2026-06-26 09:18:56'),
+(17, 'DR-20260626-0003', 'andin', '3', 20000, NULL, NULL, 'pending', '2026-06-26 09:24:43', '2026-06-26 09:24:43'),
+(18, 'DR-20260626-0004', 'andin', '3', 18000, NULL, NULL, 'pending', '2026-06-26 09:27:10', '2026-06-26 09:27:10'),
+(19, 'DR-20260626-0005', 'andin', '3', 18000, 'qris', '2026-06-26 09:41:14', 'selesai', '2026-06-26 09:33:05', '2026-06-26 09:41:14'),
+(20, 'DR-20260626-0006', 'anto', '6', 40000, NULL, NULL, 'diproses', '2026-06-26 10:21:21', '2026-06-26 10:21:51'),
+(21, 'DR-20260626-0007', 'tes', '1', 10000, 'qris', '2026-06-26 10:45:34', 'selesai', '2026-06-26 10:27:44', '2026-06-26 10:45:34');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `qr_logs`
+--
+
+CREATE TABLE `qr_logs` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `nomor_meja` varchar(10) NOT NULL,
+  `status` enum('valid','invalid') NOT NULL,
+  `ip_address` varchar(45) NOT NULL,
+  `user_agent` text DEFAULT NULL,
+  `scanned_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `qr_logs`
+--
+
+INSERT INTO `qr_logs` (`id`, `nomor_meja`, `status`, `ip_address`, `user_agent`, `scanned_at`) VALUES
+(1, '1', 'valid', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', '2026-06-26 09:14:39'),
+(2, '1', 'valid', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', '2026-06-26 09:16:30'),
+(3, '1', 'valid', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', '2026-06-26 09:18:44'),
+(4, '1', 'valid', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', '2026-06-26 09:18:45'),
+(5, '1', 'valid', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', '2026-06-26 09:18:45'),
+(6, '1', 'valid', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', '2026-06-26 09:18:46'),
+(7, '1', 'valid', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', '2026-06-26 09:18:46'),
+(8, '3', 'valid', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', '2026-06-26 09:24:20'),
+(9, '3', 'valid', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', '2026-06-26 09:26:58'),
+(10, '3', 'valid', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', '2026-06-26 09:27:47'),
+(11, '3', 'valid', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', '2026-06-26 09:32:52'),
+(12, '6', 'valid', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', '2026-06-26 10:20:57'),
+(13, '1', 'valid', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', '2026-06-26 10:27:30');
 
 -- --------------------------------------------------------
 
@@ -149,7 +258,7 @@ CREATE TABLE `users` (
   `nama` varchar(100) NOT NULL,
   `username` varchar(60) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `role` enum('admin','staff') NOT NULL DEFAULT 'staff',
+  `role` enum('admin','owner','kasir','dapur') NOT NULL DEFAULT 'kasir',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -158,9 +267,11 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `nama`, `username`, `password`, `role`, `created_at`) VALUES
-(1, 'Administrator', 'admin', '$2y$10$o976EWjVfOVDcRyjvR9JzuXleMd3MJpA4CUR0FN9019K30qlkQvHe', 'admin', '2026-06-10 06:24:38'),
-(2, 'admin', 'admin 2', 'admin', 'admin', '2026-06-10 06:59:57'),
-(4, 'budi', 'kasir', '$2y$10$EnuOxrT7Qlv72AeAEohzhO.U7fLHMUUX.kgM58RYvx0oFKj3o7Wum', 'staff', '2026-06-10 13:51:43');
+(1, 'Administrator', 'owner', '$2y$10$OXZhXUdxpw264wHhnXadI.P7PsUkq4zhYFanORC7megQz0flZ7E0m', 'owner', '2026-06-10 06:24:38'),
+(2, 'admin', 'admin 2', 'admin', 'owner', '2026-06-10 06:59:57'),
+(4, 'budi', 'kasir', '$2y$10$OXZhXUdxpw264wHhnXadI.P7PsUkq4zhYFanORC7megQz0flZ7E0m', 'kasir', '2026-06-10 13:51:43'),
+(5, 'Staff Dapur', 'dapur', '$2y$10$OXZhXUdxpw264wHhnXadI.P7PsUkq4zhYFanORC7megQz0flZ7E0m', 'dapur', '2026-06-26 09:08:59'),
+(6, 'Administrator', 'admin', '$2y$10$JY.xNJq0qv5vGkRdbwhVl.IZHYz6hpfAXuBgLpQ2/I7psFzC6Csfe', 'admin', '2026-06-26 10:01:54');
 
 --
 -- Indexes for dumped tables
@@ -175,6 +286,14 @@ ALTER TABLE `detail_pesanan`
   ADD KEY `fk_detail_menu` (`menu_id`);
 
 --
+-- Indexes for table `meja`
+--
+ALTER TABLE `meja`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_nomor_meja` (`nomor_meja`),
+  ADD UNIQUE KEY `uq_qr_token` (`qr_token`);
+
+--
 -- Indexes for table `menu`
 --
 ALTER TABLE `menu`
@@ -186,6 +305,12 @@ ALTER TABLE `menu`
 ALTER TABLE `pesanan`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `kode_pesanan` (`kode_pesanan`);
+
+--
+-- Indexes for table `qr_logs`
+--
+ALTER TABLE `qr_logs`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `users`
@@ -202,7 +327,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `detail_pesanan`
 --
 ALTER TABLE `detail_pesanan`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+
+--
+-- AUTO_INCREMENT for table `meja`
+--
+ALTER TABLE `meja`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `menu`
@@ -214,13 +345,19 @@ ALTER TABLE `menu`
 -- AUTO_INCREMENT for table `pesanan`
 --
 ALTER TABLE `pesanan`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+
+--
+-- AUTO_INCREMENT for table `qr_logs`
+--
+ALTER TABLE `qr_logs`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables

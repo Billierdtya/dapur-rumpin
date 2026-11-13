@@ -1,0 +1,13 @@
+# Archives & Backups
+*.zip
+*.rar
+*.tar.gz
+
+# Database duplicate downloads
+dapur_rumpin (*).sql
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
